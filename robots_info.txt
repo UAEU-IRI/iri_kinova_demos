@@ -1,0 +1,10 @@
+robot arm 1:
+
+roslaunch kinova_bringup kinova_robot.launch kinova_robotSerial:=0 kinova_robotType:=j2s6s300 kinova_robotName:=left
+
+
+
+
+robot arm 2:
+
+roslaunch kinova_bringup kinova_robot.launch kinova_robotSerial:=1 kinova_robotType:=j2s6s300 kinova_robotName:=right

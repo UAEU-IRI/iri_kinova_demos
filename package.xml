@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>iri_kinova_demos</name>
+  <version>1.0.0</version>
+  <description> Demo apps for kinova JACO2 j2s6s300 robot arm. UAEU, IRI Labrotory</description>
+
+  <author>Hassan Umari</author>
+  <maintainer email="oh91@windowslive.com">Hassan Umari</maintainer>
+
+  <license>MIT</license>
+  <url></url>
+  
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>tf</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_planning</depend>
+  <depend>moveit_ros_planning_interface</depend>
+
+ 
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
