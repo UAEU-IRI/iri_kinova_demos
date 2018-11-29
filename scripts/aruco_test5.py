@@ -50,14 +50,23 @@ while not rospy.is_shutdown():
                 R_io=np.matrix(rot)  
                 P_i_ic=np.matrix([[0.],[0.],
                                   [-markerLength*0.5]])            
+                #computer Position of cube ceter (c) wrt camera frame (o)
+                # frame i is the frame attached on cube's face.
+                
+                #append so if more than one face is detected, we do averging
+                #of all cumputed center position and orientation
                 P_oc_o.append(P_o_oi+R_io*P_i_ic)
                 R_co.append(tf.transformations.quaternion_from_euler(0, 0, 0))
             
             if count>0:
                 avg_P_oc_o.append(sum(P_oc_o)/count)
+                #on this line, and for the first loop, avg_P_oc_o will
+                #have a length of one. Dublicate so we can do the filter
+                #equation without changing it
                 if len(avg_P_oc_o)<2:
                     print 'here'
-                    avg_P_oc_o.append(sum(P_oc_o)/count)                    
+                    avg_P_oc_o.append(sum(P_oc_o)/count)  
+                #low pass filtering                  
                 avg_P_oc_o[-1]=avg_P_oc_o[-1]*(1-filter)+avg_P_oc_o[-2]*filter
                 avg_R_co=R_co[0]
                 br.sendTransform(avg_P_oc_o[-1],
