@@ -55,20 +55,19 @@ while not rospy.is_shutdown():
                 
                 #append so if more than one face is detected, we do averging
                 #of all cumputed center position and orientation
-                P_oc_o.append(P_o_oi+R_io*P_i_ic)
-                R_co.append(tf.transformations.quaternion_from_euler(0, 0, 0))
+                P_oc_o=P_o_oi+R_io*P_i_ic
+                R_co=tf.transformations.quaternion_from_euler(0, 0, 0)
             
             if count>0:
-                avg_P_oc_o.append(sum(P_oc_o)/count)
+                avg_P_oc_o.append(P_oc_o)
                 #on this line, and for the first loop, avg_P_oc_o will
                 #have a length of one. Dublicate so we can do the filter
                 #equation without changing it
                 if len(avg_P_oc_o)<2:
-                    print 'here'
-                    avg_P_oc_o.append(sum(P_oc_o)/count)  
+                    avg_P_oc_o.append(P_oc_o)  
                 #low pass filtering                  
                 avg_P_oc_o[-1]=avg_P_oc_o[-1]*(1-filter)+avg_P_oc_o[-2]*filter
-                avg_R_co=R_co[0]
+                avg_R_co=R_co
                 br.sendTransform(avg_P_oc_o[-1],
                                  avg_R_co,
                                  rospy.Time.now(),
