@@ -14,6 +14,7 @@ markerLength=0.05
 arucoDictionary='ORIGINAL' 
 RATE=100
 vid_input=0
+filter=0.8
 rate = rospy.Rate(RATE)
 cameraMatrix=np.array([[1033.519835, 0.000000, 372.760979],
                        [0.000000, 1034.708447, 245.490466],
@@ -26,7 +27,7 @@ cap = cv2.VideoCapture(vid_input)
 dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
 
 
-
+avg_P_oc_o=[]
 
 while not rospy.is_shutdown():
     ret, frame = cap.read()
@@ -37,6 +38,8 @@ while not rospy.is_shutdown():
         cv2.aruco.drawDetectedMarkers(frame,res[0],res[1])
         for i in range(0,len(res[1])):
             count=0
+            P_oc_o=[]
+            R_co=[]
             if res[1][i]==[markerID]:
                 count+=1
                 pose=cv2.aruco.estimatePoseSingleMarkers(res[0][i],markerLength,cameraMatrix,distCo)
@@ -47,10 +50,23 @@ while not rospy.is_shutdown():
                 R_io=np.matrix(rot)  
                 P_i_ic=np.matrix([[0.],[0.],
                                   [-markerLength*0.5]])            
-                P_oc_o=P_o_oi+R_io*P_i_ic
-                R_co = tf.transformations.quaternion_from_euler(0, 0, 0)
-                br.sendTransform(P_oc_o,R_co,rospy.Time.now(),"marker"+str(markerID),"camera_link")
-                cv2.aruco.drawAxis(frame, cameraMatrix, distCo, pose[0], pose[1], 0.02)
+                P_oc_o.append(P_o_oi+R_io*P_i_ic)
+                R_co.append(tf.transformations.quaternion_from_euler(0, 0, 0))
+            
+            if count>0:
+                avg_P_oc_o.append(sum(P_oc_o)/count)
+                if len(avg_P_oc_o)<2:
+                    print 'here'
+                    avg_P_oc_o.append(sum(P_oc_o)/count)                    
+                avg_P_oc_o[-1]=avg_P_oc_o[-1]*(1-filter)+avg_P_oc_o[-2]*filter
+                avg_R_co=R_co[0]
+                br.sendTransform(avg_P_oc_o[-1],
+                                 avg_R_co,
+                                 rospy.Time.now(),
+                                 "marker"+str(markerID),"camera_link")
+                del(avg_P_oc_o[0])                   
+                cv2.aruco.drawAxis(frame, cameraMatrix, distCo, pose[0],
+                                   pose[1], 0.02)
     # Display the resulting frame
     cv2.imshow('frame',frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
