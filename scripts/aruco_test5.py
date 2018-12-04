@@ -2,13 +2,14 @@ import numpy as np
 import cv2
 import rospy
 import tf
-
-
+from utils import arm
+from time import sleep
 
 
 rospy.init_node('markert_tf_broadcaster')
 
 
+left_arm=arm('j2s6s300')
 markerID=74
 markerLength=0.05
 arucoDictionary='ORIGINAL' 
@@ -23,12 +24,22 @@ distCo=np.array([0.082399, -0.152927, 0.004990, 0.014425, 0.000000])
 
 
 br = tf.TransformBroadcaster()
+listener = tf.TransformListener()
 cap = cv2.VideoCapture(vid_input)
 dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
 
 
 avg_P_oc_o=[]
+left_arm.sendPose([0.0853799805045,-0.333960175514,0.308364719152],
+      [-0.190763324499,0.981017589569,0.0074520856142,0.03403397277] )
 
+
+
+
+
+
+left_arm.wait_for_pose()
+cond=False
 while not rospy.is_shutdown():
     ret, frame = cap.read()
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -75,10 +86,26 @@ while not rospy.is_shutdown():
                 del(avg_P_oc_o[0])                   
                 cv2.aruco.drawAxis(frame, cameraMatrix, distCo, pose[0],
                                    pose[1], 0.02)
+                try:
+                    (trans,rot) = listener.lookupTransform('j2s6s300_link_base',
+                                                     "marker"+str(markerID), rospy.Time(0))
+
+                    print '____________________________'
+                    print trans
+                    print "========================="
+                except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                    continue
+                                
     # Display the resulting frame
     cv2.imshow('frame',frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break        
+    key=cv2.waitKey(1)
+    if key & 0xFF == ord('q'):
+        break
+    if key == ord('g'):
+        trans[2]=0.2
+        trans[0]+=0
+        trans[1]+=0
+        left_arm.sendPose(trans,[0.995739459991,0.072015479207, 0.0565091781318, 0.0111087122932] )
     rate.sleep()
     
 # When everything done, release the capture
