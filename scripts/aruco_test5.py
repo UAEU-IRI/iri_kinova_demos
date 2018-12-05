@@ -23,6 +23,16 @@ cameraMatrix=np.array([[1033.519835, 0.000000, 372.760979],
 distCo=np.array([0.082399, -0.152927, 0.004990, 0.014425, 0.000000])
 
 
+
+
+
+ 
+
+
+
+
+
+
 br = tf.TransformBroadcaster()
 listener = tf.TransformListener()
 cap = cv2.VideoCapture(vid_input)
@@ -30,8 +40,8 @@ dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
 
 
 avg_P_oc_o=[]
-left_arm.sendPose([0.0853799805045,-0.333960175514,0.308364719152],
-      [-0.190763324499,0.981017589569,0.0074520856142,0.03403397277] )
+left_arm.sendPose([-0.143723472953,0.370040029287,0.378145724535],
+      [0.995715022087,0.069659717381,0.0589518249035,0.0149603504688])
 
 
 
@@ -105,6 +115,9 @@ while not rospy.is_shutdown():
         trans[2]=0.2
         trans[0]+=0
         trans[1]+=0
+        left_arm.sendPose(trans,[0.995739459991,0.072015479207, 0.0565091781318, 0.0111087122932] )
+        key=cv2.waitKey(0)
+        trans[2]=0.035
         left_arm.sendPose(trans,[0.995739459991,0.072015479207, 0.0565091781318, 0.0111087122932] )
     rate.sleep()
     
