@@ -102,7 +102,7 @@ while not rospy.is_shutdown():
 
                     print '____________________________'
                     print trans
-                    print "========================="
+                    print "============================"
                 except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                     continue
                                 

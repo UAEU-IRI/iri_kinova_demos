@@ -7,7 +7,7 @@ import tf
 import cv2
 import numpy as np
 
-class arm:
+class Arm:
     def __init__(self,prefix):
         self.prefix=prefix
         action_address = '/' + prefix + '_driver/pose_action/tool_pose'
@@ -87,8 +87,6 @@ class arm:
 #==========================================================================
              
 class Marker:
-    position=[] #position of marker center wrt camera frame
-    rotation=None #rotation of marker wrt camera frame (fixed to eye3)
     def __init__(self,markerID,markerLength,cameraMatrix,distCo,filter=0.8,
                       dictionary='ORIGINAL'):
         
@@ -97,29 +95,29 @@ class Marker:
                                                 cv2.aruco.DICT_ARUCO_ORIGINAL)
         
         self.markerID=markerID
-        Marker.rotation=tf.transformations.quaternion_from_euler(0, 0, 0)
+        self.rotation=tf.transformations.quaternion_from_euler(0, 0, 0)
         self.filter=filter
         self.cameraMatrix=cameraMatrix
         self.distCo=distCo
         self.markerLength=markerLength
-    
+        self.position=[] #position of marker center wrt camera frame
+        self.rotation=tf.transformations.quaternion_from_euler(0, 0, 0) #rotation of marker wrt camera frame (fixed to eye3)
         return None
 
     def __str__(self):
-        return '['+str(self.markerID)+']position: <'+str(Marker.position[-1].tolist()[0][0])\
-                          +','+str(Marker.position[-1].tolist()[1][0])\
-                          +','+str(Marker.position[-1].tolist()[2][0])+'>'
+        return '['+str(self.markerID)+']position: <'+str(self.position[-1].tolist()[0][0])\
+                          +','+str(self.position[-1].tolist()[1][0])\
+                          +','+str(self.position[-1].tolist()[2][0])+'>'
     
     def updatePose(self,frame):
-        res = cv2.aruco.detectMarkers(frame,self.dictionary)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        res = cv2.aruco.detectMarkers(gray,self.dictionary)
         status=False
         if len(res[0]) > 0:
             for i in range(0,len(res[1])):
-                count=0
                 P_oc_o=[]
                 R_co=[]
                 if res[1][i]==[self.markerID]:
-                    count+=1
                     #cv2.aruco.drawDetectedMarkers(frame,res[0][i],res[1][i])
                     pose=cv2.aruco.estimatePoseSingleMarkers(res[0][i],
                                     self.markerLength,self.cameraMatrix,self.distCo)
@@ -136,27 +134,17 @@ class Marker:
                     cv2.aruco.drawAxis(frame, self.cameraMatrix, self.distCo,
                                        pose[0], pose[1], 0.02)
 
+                    self.position.append(P_oc_o)
+                    if len(self.position)<2:
+                        self.position.append(P_oc_o)  
+
+                    self.position[-1]=self.position[-1]*(1-self.filter)+\
+                                        self.position[-2]*self.filter
                     
-                if count>0:
-                    Marker.position.append(P_oc_o)
-                    if len(Marker.position)<2:
-                        Marker.position.append(P_oc_o)  
-                   
-                    Marker.position[-1]=Marker.position[-1]*(1-self.filter)+\
-                                        Marker.position[-2]*self.filter
-                    
-                    del(Marker.position[0])
-                    status=True                  
+                    del(self.position[0])
+                    status=True
+                             
                             
-        return [status,frame]                               
-                    
-                            
-    
-    
-    
-    
-    
-    
-    
-    
-     
+        return [status,frame] 
+        
+
