@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import rospy
 import actionlib
 import kinova_msgs.msg

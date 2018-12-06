@@ -1,0 +1,13 @@
+<!-- -->
+<launch>
+<include file="$(find iri_kinova_demos)/launch/singleArm_bringup.launch"/>
+
+<node pkg="iri_kinova_demos" type="marker_locator.py" name="marker_locator"/>
+
+<node pkg="iri_kinova_demos" type="pick.py" name="pick"/>
+
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find iri_kinova_demos)/launch/config.rviz"/>
+</launch>
+
+
+
